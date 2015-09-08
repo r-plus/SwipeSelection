@@ -761,7 +761,7 @@ static BOOL shiftByOtherKey = NO;
 static BOOL isLongPressed = NO;
 static BOOL isDeleteKey = NO;
 static BOOL isMoreKey = NO;
-
+static BOOL isStartedFromDeleteKey = NO;
 
 %hook UIKeyboardLayoutStar
 /*==============touchesBegan================*/
@@ -776,9 +776,11 @@ static BOOL isMoreKey = NO;
 	// Delete key
 	if ([key isEqualToString:@"delete"]) {
 		isDeleteKey = YES;
+        isStartedFromDeleteKey = YES;
 	}
 	else {
 		isDeleteKey = NO;
+        isStartedFromDeleteKey = NO;
 	}
 	
 	
@@ -839,7 +841,7 @@ static BOOL isMoreKey = NO;
 	
 	
 	// Delete key
-	if ([key isEqualToString:@"delete"] && !isLongPressed) {
+	if ([key isEqualToString:@"delete"] && !isLongPressed && isStartedFromDeleteKey) {
 		UIKeyboardImpl *kb = [UIKeyboardImpl activeInstance];
 		if ([kb respondsToSelector:@selector(handleDelete)]) {
 			[kb handleDelete];
@@ -852,7 +854,7 @@ static BOOL isMoreKey = NO;
 		}
 	}
 	
-	
+	isStartedFromDeleteKey = NO;
 	shiftByOtherKey = NO;
 	isLongPressed = NO;
 	isMoreKey = NO;
