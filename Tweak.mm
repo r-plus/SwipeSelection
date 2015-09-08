@@ -488,6 +488,11 @@ Class AKFlickGestureRecognizer(){
 			[startingtextRange release], startingtextRange = nil;
 			startingtextRange = [[privateInputDelegate selectedTextRange] retain];
 		}
+
+        if (self.bounds.size.width * 0.1 < previousPosition.x && previousPosition.x < self.bounds.size.width * 0.9) {
+            NSLog(@"NOT EDGE SWIPE!! gesture state goto cancelled. x position = %f", previousPosition.x);
+            gesture.state = UIGestureRecognizerStateCancelled;
+        }
 	}
 	else if (gesture.state == UIGestureRecognizerStateChanged) {
 		UITextRange *currentRange = startingtextRange;
