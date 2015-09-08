@@ -161,6 +161,7 @@
 -(id)keyHitTestClosestToPoint:(CGPoint)arg1;
 -(id)keyHitTestContainingPoint:(CGPoint)arg1;
 
+-(BOOL)SS_isEdgeSwipe;
 -(BOOL)SS_shouldSelect;
 -(BOOL)SS_disableSwipes;
 -(BOOL)isShiftKeyBeingHeld;
@@ -489,7 +490,7 @@ Class AKFlickGestureRecognizer(){
 			startingtextRange = [[privateInputDelegate selectedTextRange] retain];
 		}
 
-        if (self.bounds.size.width * 0.1 < previousPosition.x && previousPosition.x < self.bounds.size.width * 0.9) {
+        if ([currentLayout respondsToSelector:@selector(SS_isEdgeSwipe)] && ![currentLayout SS_isEdgeSwipe]) {
             NSLog(@"NOT EDGE SWIPE!! gesture state goto cancelled. x position = %f", previousPosition.x);
             gesture.state = UIGestureRecognizerStateCancelled;
         }
@@ -762,13 +763,16 @@ static BOOL isLongPressed = NO;
 static BOOL isDeleteKey = NO;
 static BOOL isMoreKey = NO;
 static BOOL isStartedFromDeleteKey = NO;
+static BOOL isEdgeSwipe = NO;
 
 %hook UIKeyboardLayoutStar
 /*==============touchesBegan================*/
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	UITouch *touch = [touches anyObject];
 	
-	UIKBKey *keyObject = [self keyHitTest:[touch locationInView:touch.view]];
+    CGPoint touchPoint = [touch locationInView:touch.view];
+    isEdgeSwipe = !(self.bounds.size.width * 0.1 < touchPoint.x && touchPoint.x < self.bounds.size.width * 0.9);
+	UIKBKey *keyObject = [self keyHitTest:touchPoint];
 	NSString *key = [[keyObject representedString] lowercaseString];
 //	NSLog(@"key=[%@]  -  keyObject=%@  -  flickDirection = %d", key, keyObject, [(UIKBTree*)keyObject flickDirection]);
 	
@@ -825,6 +829,7 @@ static BOOL isStartedFromDeleteKey = NO;
 -(void)touchesCancelled:(id)arg1 withEvent:(id)arg2 {
 	%orig(arg1, arg2);
 	
+    isEdgeSwipe = NO;
     isStartedFromDeleteKey = NO;
 	shiftByOtherKey = NO;
 	isLongPressed = NO;
@@ -855,6 +860,7 @@ static BOOL isStartedFromDeleteKey = NO;
 		}
 	}
 	
+    isEdgeSwipe = NO;
 	isStartedFromDeleteKey = NO;
 	shiftByOtherKey = NO;
 	isLongPressed = NO;
@@ -881,6 +887,11 @@ static BOOL isStartedFromDeleteKey = NO;
 %new
 -(BOOL)SS_disableSwipes{
 	return isMoreKey;
+}
+
+%new
+-(BOOL)SS_isEdgeSwipe{
+    return isEdgeSwipe;
 }
 %end
 
