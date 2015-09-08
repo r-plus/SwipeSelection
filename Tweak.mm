@@ -825,6 +825,7 @@ static BOOL isStartedFromDeleteKey = NO;
 -(void)touchesCancelled:(id)arg1 withEvent:(id)arg2 {
 	%orig(arg1, arg2);
 	
+    isStartedFromDeleteKey = NO;
 	shiftByOtherKey = NO;
 	isLongPressed = NO;
 	isMoreKey = NO;
